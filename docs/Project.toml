@@ -10,7 +10,8 @@ PowerSimulations = "e690365d-45e2-57bb-ac84-44ba829e73c4"
 PowerSystemCaseBuilder = "f00506e0-b84f-492a-93c2-c0a9afc4364e"
 PowerSystems = "bcd98974-b02a-5e2f-9ee0-a103f5c450dd"
 StorageSystemsSimulations = "e2f1a126-19d0-4674-9252-42b2384f8e3c"
+DocumenterInterLinks = "d12716ef-a0f6-4df4-a9f1-a5a34e75c656"
 
 [compat]
 Documenter = "1"
-InfrastructureSystems = "2"
+InfrastructureSystems = "^2.0"

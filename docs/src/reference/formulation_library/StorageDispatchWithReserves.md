@@ -4,6 +4,8 @@
 StorageDispatchWithReserves
 ```
 
+
+
 ## Attributes
 
   - `"reservation"`: Forces the storage to operate exclusively on charge or discharge mode through the entire operation interval. We recommend setting this to false for models with relatively longer time resolutions (e.g., 1-Hr) since the storage can take simultaneous charge or discharge positions on average over the period.
@@ -19,8 +21,7 @@ StorageDispatchWithReserves
   - `"regularization"`: This attribute smooths the charge/discharge profiles to avoid bang-bang solutions via a penalty on the absolute value of the intra-temporal variations of the charge and discharge power. Solving for optimal storage dispatch can stall in models with large amounts of curtailment or long periods with negative or zero prices due to numerical degeneracy. The regularization term is scaled by the storage device's power limits to normalize the term and avoid additional penalties to larger storage units.
 
 !!! danger
-    
-    Setting the energy target attribute in combination with [`EnergyTargetFeedforward`](@ref) or [`EnergyLimitFeedforward`](@ref) is not permitted and StorageSystemsSimulations will throw an exception.
+Setting the energy target attribute in combination with [`EnergyTargetFeedforward`](@ref) or [`EnergyLimitFeedforward`](@ref) is not permitted and StorageSystemsSimulations will throw an exception.
 
 ## Mathematical Model
 
@@ -91,15 +92,15 @@ StorageDispatchWithReserves
 ### Model
 
 ```math
-\begin{aligned}
+\begin{align*}
 \min_{\substack{\boldsymbol{p}^{st, ch}, \boldsymbol{p}^{st, ds}, \boldsymbol{e}^{st}, \\ e^{st+}, e^{st-}, c^{ch-} + c^{ds-}}}
 & \rho^{e+} e^{st+} + \rho^{e-} e^{st-} + \rho^{c} \left(c^{ch-} + c^{ds-} \right) + \rho^{z} \left(\frac{z^{ch}}{P^{max,ch}_{st}} + \frac{z^{ds}}{P^{max,ds}_{st}} \right)\\
 & +\Delta t \sum_{t \in \mathcal{T}} \text{VOM}_{st} \left ( \left(\sum_{p \in \mathcal{P}^{\text{as}_\text{dn}}} R^*_{p,t} sb_{stc,p,t} + p^{st,ch}_{t} \right) + \left(\sum_{p \in \mathcal{P}^{\text{as}_\text{up}}} R^*_{p,t} sb_{std,p,t} + p^{st,ds}_{t}\right) \right) &
-\end{aligned}
+\end{align*}
 ```
 
 ```math
-\begin{aligned}
+\begin{align*}
 \text{s.t.}  & &\\
 &\text{Power Limit Constraints.}&\\
 &p^{st, ch}_{t} + \sum_{p \in \mathcal{P}^{\text{as}_\text{dn}}} sb_{stc,p,t} \leq (1 - \text{ss}^{st}_{t})P^{max,ch}_{st} & \quad \forall t \in \mathcal{T} \\
@@ -109,7 +110,7 @@ StorageDispatchWithReserves
 &\text{Energy Storage Limit Constraints}&\\
 &e^{st}_{t} \leq E^{max}_{st} & \forall t \in \mathcal{T}\\
 & e^{st}_{t} \geq E^{min}_{st} & \forall t \in \mathcal{T}\\
-&\text{Energy Bookkeeping constraints}&\\
+&\text{Energy Bookkeeping Constraints}&\\
 & E^{st}_{0} + \Delta t  \left(\sum_{p \in \mathcal{P}^{\text{as}_\text{dn}}} R^*_{p,1} sb_{stc,p,1} + p^{st,ch}_{1}  - \sum_{p \in \mathcal{P}^{\text{as}_\text{up}}} R^*_{p,1} sb_{stc,p,1}\right)\eta^{ch}_{st}&\\
 &-\Delta t\left(\sum_{p \in \mathcal{P}^{\text{as}_\text{up}}} R^*_{p,1} sb_{std,p,1} + p^{st,ds}_{1} - \sum_{p \in \mathcal{P}^{\text{as}_\text{dn}}} R^*_{p,t} sb_{std,p,1}\right)\frac{1}{\eta^{ds}_{st}}=e^{st}_{1}\\
 &e^{st}_{t-1} + \Delta t  \left(\sum_{p \in \mathcal{P}^{\text{as}_\text{dn}}} R^*_{p,t} sb_{stc,p,t} + p^{st,ch}_{t}  - \sum_{p \in \mathcal{P}^{\text{as}_\text{up}}} R^*_{p,t} sb_{stc,p,t}\right)\eta^{ch}_{st}&\\
@@ -139,8 +140,8 @@ StorageDispatchWithReserves
 & \left(\sum_{p \in \mathcal{P}^{\text{as}_\text{dn}}} R^*_{p,t-1} sb_{stc,p,t-1} + p^{st,ch}_{t-1}  - \sum_{p \in \mathcal{P}^{\text{as}_\text{up}}} R^*_{p,t-1} sb_{stc,p,t-1}\right) &\\
 & - \left(\sum_{p \in \mathcal{P}^{\text{as}_\text{dn}}} R^*_{p,t} sb_{stc,p,t} + p^{st,ch}_{t}  - \sum_{p \in \mathcal{P}^{\text{as}_\text{up}}} R^*_{p,t} sb_{stc,p,t}\right) \ge -z^{st, ch}_{t} & \forall t \in \mathcal{T} \setminus 1\\
 &\left(\sum_{p \in \mathcal{P}^{\text{as}_\text{up}}} R^*_{p,t-1} sb_{std,p,t-1} + p^{st,ds}_{t-1} - \sum_{p \in \mathcal{P}^{\text{as}_\text{dn}}} R^*_{p,t-1} sb_{std,p,t-1}\right) &\\
-&-\left(\sum_{p \in \mathcal{P}^{\text{as}_\text{up}}} R^*_{p,t} sb_{std,p,t} + p^{st,ds}_{t} - \sum_{p \in \mathcal{P}^{\text{as}_\text{dn}}} R^*_{p,t} sb_{std,p,t}\right) \le z^{st, ds}_{t}  & \forall t \in \mathcal{T} \setminus 1\\
+&-\left(\sum_{p \in \mathcal{P}^{\text{as}_\text{up}}} R^*_{p,t} sb_{std,p,t-1} + p^{st,ds}_{t} - \sum_{p \in \mathcal{P}^{\text{as}_\text{dn}}} R^*_{p,t} sb_{std,p,t}\right) \le z^{st, ds}_{t}  & \forall t \in \mathcal{T} \setminus 1\\
 &\left(\sum_{p \in \mathcal{P}^{\text{as}_\text{up}}} R^*_{p,t-1} sb_{std,p,t-1} + p^{st,ds}_{t-1} - \sum_{p \in \mathcal{P}^{\text{as}_\text{dn}}} R^*_{p,t-1} sb_{std,p,t-1}\right) &\\
 &-\left(\sum_{p \in \mathcal{P}^{\text{as}_\text{up}}} R^*_{p,t} sb_{std,p,t} + p^{st,ds}_{t} - \sum_{p \in \mathcal{P}^{\text{as}_\text{dn}}} R^*_{p,t} sb_{std,p,t}\right) \ge -z^{st, ds}_{t}  & \forall t \in \mathcal{T} \setminus 1
-\end{aligned}
+\end{align*}
 ```
